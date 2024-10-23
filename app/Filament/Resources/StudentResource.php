@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Exports\StudentsExport;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
+use App\Models\Classes;
 use App\Models\Section;
 use App\Models\Student;
 use Filament\Forms;
@@ -14,10 +15,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentResource extends Resource
@@ -56,7 +58,27 @@ class StudentResource extends Resource
             ])
             ->persistSortInSession()
             ->filters([
-                //
+                Filter::make('students-filter')
+                ->form([
+                    Select::make('class_id')
+                        ->label('Filter by Class')
+                        ->placeholder('Select a class')
+                        ->options(Classes::pluck('name', 'id'))
+                        ->afterStateUpdated(fn (callable $set) => $set('section_id', null)),
+                    Select::make('section_id')
+                        ->label('Filter by Section')
+                        ->placeholder('Select a section')
+                        ->options(function (Forms\Get $get) {
+                            $classId = $get('class_id');
+
+                            return Section::where('class_id', $classId)->pluck('name', 'id');
+                        })
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    $query = $data['class_id'] ? $query->where('class_id', $data['class_id']) : $query;
+
+                    return $data['section_id'] ? $query->where('section_id', $data['section_id']) : $query;
+                })
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -66,10 +88,10 @@ class StudentResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('export')
-                    ->label('Export to Excel')
-                    ->icon('heroicon-o-arrow-up-on-square-stack')
-                    ->action(function (Collection $rows) {
-                        return Excel::download(new StudentsExport($rows), 'students.xlsx');
+                        ->label('Export to Excel')
+                        ->icon('heroicon-o-arrow-up-on-square-stack')
+                        ->action(function (Collection $rows) {
+                            return Excel::download(new StudentsExport($rows), 'students.xlsx');
                     })
                 ]),
             ]);
