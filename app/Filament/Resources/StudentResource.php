@@ -61,7 +61,7 @@ class StudentResource extends Resource
                                 TextInput::make('name')->label('Class')->required(),
                             ]),
                     ]),
-                TextInput::make('password')->required(),
+                TextInput::make('password')->required()->hiddenOn('edit'),
             ]);
     }
 
