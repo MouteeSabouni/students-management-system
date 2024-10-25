@@ -3,8 +3,6 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Classes;
-use App\Models\Section;
-use App\Models\Student;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -12,12 +10,18 @@ class ClassesOverview extends BaseWidget
 {
     protected function getStats(): array
     {
-        $classes = Classes::with('students', 'sections')->get();
+        $stats = [];
+        $classes = Classes::with('students', 'sections')->latest()->limit(4)->get();
 
         foreach ($classes as $class) {
-            $stats[] = Stat::make('Students: ' . $class->students()->count() . ' — ' . 'Sections: ' . $class->sections()->count(), $class->name);
-        }
+            $studentsCount = $class->students->count();
+            $sectionsCount = $class->sections->count();
 
-        return $stats;
+            $stats[] = (new Stat(
+                'Students: ' . $studentsCount . ' — ' . 'Sections: ' . $sectionsCount,
+                $class->name
+            ))->description('Added ' . $class->created_at->diffForHumans());
+        }
+            return $stats;
     }
 }
