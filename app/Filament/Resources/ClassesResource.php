@@ -22,7 +22,7 @@ class ClassesResource extends Resource
 {
     protected static ?string $model = Classes::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-inbox';
 
     protected static ?string $navigationGroup = 'Academics';
 
