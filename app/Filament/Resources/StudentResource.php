@@ -30,6 +30,11 @@ class StudentResource extends Resource
 
     protected static ?string $navigationGroup = 'Academics';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::$model::count();
+    }
+
     public static function form(Form $form): Form
     {
         return $form
