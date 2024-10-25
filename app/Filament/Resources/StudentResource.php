@@ -33,15 +33,34 @@ class StudentResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')->autofocus()->required(),
-                TextInput::make('email')->required()->unique(),
-                Select::make('class_id')->relationship('class', 'name')->live()->required(),
+                TextInput::make('email')->required()->email()->unique(),
+                Select::make('class_id')
+                    ->relationship('class', 'name')
+                    ->live()
+                    ->required()
+                    ->createOptionForm([
+                        TextInput::make('name')->label('Class')->required(),
+                    ]),
                 Select::make('section_id')
+                    ->relationship('section', 'name')
                     ->options(function (Forms\Get $get) {
                         $classId = $get('class_id');
 
-                        if($classId) return Section::where('class_id', $classId)->pluck('name', 'id');
+                        return $classId
+                            ? Section::where('class_id', $classId)->pluck('name', 'id')
+                            : [];
                     })
-                    ->required(),
+                    ->required()
+                    ->createOptionForm([
+                        TextInput::make('name')->label('Section name')->required(),
+                        Select::make('class_id')
+                            ->label('Class')
+                            ->relationship('class', 'name')
+                            ->required()
+                            ->createOptionForm([
+                                TextInput::make('name')->label('Class')->required(),
+                            ]),
+                    ]),
                 TextInput::make('password')->required(),
             ]);
     }
@@ -54,7 +73,7 @@ class StudentResource extends Resource
                 TextColumn::make('email')->searchable()->sortable(),
                 TextColumn::make('class.name')->badge()->sortable(),
                 TextColumn::make('section.name')->badge(),
-                TextColumn::make('created_at')->label('Join Date')->sortable(),
+                TextColumn::make('created_at')->label('Join Date')->date()->sortable(),
             ])
             ->persistSortInSession()
             ->filters([

@@ -29,7 +29,12 @@ class SectionResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('class_id')->relationship('class', 'name')->required(),
+                Select::make('class_id')
+                    ->relationship('class', 'name')
+                    ->required()
+                    ->createOptionForm([
+                        TextInput::make('name')->label('Class')->required(),
+                    ]),
                 TextInput::make('name')->required(),
             ]);
     }
@@ -39,7 +44,7 @@ class SectionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name'),
-                TextColumn::make('class.name')->badge(),
+                TextColumn::make('class.name')->badge()->sortable(),
                 TextColumn::make('students_count')
                     ->counts('students')
                     ->label('No. of Students')
