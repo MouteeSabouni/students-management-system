@@ -13,6 +13,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Colors\Color;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -113,12 +114,13 @@ class StudentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('export')
+                    Tables\Actions\BulkAction::make('export-to-excel')
                         ->label('Export to Excel')
                         ->icon('heroicon-o-arrow-up-on-square-stack')
+                        ->color(Color::Green)
                         ->action(function (Collection $rows) {
                             return Excel::download(new StudentsExport($rows), 'students.xlsx');
-                    })
+                    }),
                 ]),
             ]);
     }
