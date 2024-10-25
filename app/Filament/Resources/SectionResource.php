@@ -14,9 +14,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rules\Unique;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SectionResource extends Resource
@@ -42,7 +42,9 @@ class SectionResource extends Resource
                     ->createOptionForm([
                         TextInput::make('name')->label('Class')->required(),
                     ]),
-                TextInput::make('name')->required(),
+                TextInput::make('name')->required()->unique(ignoreRecord: true, modifyRuleUsing: function (Forms\Get $get, Unique $unique){
+                    return $unique->where('class_id', $get('class_id'));
+                }),
             ]);
     }
 
