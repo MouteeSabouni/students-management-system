@@ -85,6 +85,7 @@ class StudentResource extends Resource
                 TextColumn::make('section.name')->badge(),
                 TextColumn::make('created_at')->label('Join Date')->date()->sortable(),
             ])
+            ->defaultSort('created_at')
             ->persistSortInSession()
             ->filters([
                 Filter::make('students-filter')
@@ -112,8 +113,8 @@ class StudentResource extends Resource
                 })
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->hidden(fn (Student $student) => auth()->id() !== $student->user_id),
+                Tables\Actions\DeleteAction::make()->hidden(fn (Student $student) => auth()->id() !== $student->user_id),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()->color(Color::Slate),
@@ -137,7 +138,10 @@ class StudentResource extends Resource
                             }, 'students.pdf');
                     }),
                 ])->label('Export selected')
-            ]);
+            ])->defaultPaginationPageOption(25)
+            ->description('You can only edit/delete the students you added.
+                You can\'t modify students added by other admins.')
+            ->striped();
     }
 
     public static function getRelations(): array
