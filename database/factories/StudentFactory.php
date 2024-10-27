@@ -17,7 +17,7 @@ class StudentFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'user_id' => User::first(),
+            'user_id' => User::first() ?? User::factory(),
         ];
     }
 }
