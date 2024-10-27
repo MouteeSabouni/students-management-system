@@ -42,7 +42,9 @@ class SectionResource extends Resource
                     ->createOptionForm([
                         TextInput::make('name')->label('Class')->required(),
                     ]),
-                TextInput::make('name')->required()->unique(ignoreRecord: true, modifyRuleUsing: function (Forms\Get $get, Unique $unique){
+                TextInput::make('name')
+                    ->required()
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Forms\Get $get, Unique $unique){
                     return $unique->where('class_id', $get('class_id'));
                 }),
             ]);

@@ -93,7 +93,9 @@ class StudentResource extends Resource
                         ->label('Filter by Class')
                         ->placeholder('Select a class')
                         ->options(Classes::pluck('name', 'id'))
-                        ->afterStateUpdated(fn (callable $set) => $set('section_id', null)),
+                        ->afterStateUpdated(function (Forms\Set $set) {
+                            return $set('section_id', null);
+                        }),
                     Select::make('section_id')
                         ->label('Filter by Section')
                         ->placeholder('Select a section')
