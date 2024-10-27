@@ -9,7 +9,9 @@ use App\Models\Classes;
 use App\Models\Section;
 use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -88,33 +90,42 @@ class StudentResource extends Resource
             ->defaultSort('created_at')
             ->persistSortInSession()
             ->filters([
-                Filter::make('students-filter')
-                ->form([
-                    Select::make('class_id')
-                        ->label('Filter by Class')
-                        ->placeholder('Select a class')
-                        ->options(Classes::pluck('name', 'id'))
-                        ->afterStateUpdated(function (Forms\Set $set) {
-                            return $set('section_id', null);
-                        }),
-                    Select::make('section_id')
-                        ->label('Filter by Section')
-                        ->placeholder('Select a section')
-                        ->options(function (Forms\Get $get) {
-                            $classId = $get('class_id');
+                Filter::make('class-section-filter')
+                    ->form([
+                        Select::make('class_id')
+                            ->label('Filter by Class')
+                            ->placeholder('Select a class')
+                            ->options(Classes::pluck('name', 'id'))
+                            ->afterStateUpdated(function (Forms\Set $set) {
+                                return $set('section_id', null);
+                            }),
+                        Select::make('section_id')
+                            ->label('Filter by Section')
+                            ->placeholder('Select a section')
+                            ->options(function (Forms\Get $get) {
+                                $classId = $get('class_id');
 
-                            return Section::where('class_id', $classId)->pluck('name', 'id');
-                        })
-                ])
-                ->query(function (Builder $query, array $data): Builder {
-                    $query = $data['class_id'] ? $query->where('class_id', $data['class_id']) : $query;
+                                return Section::where('class_id', $classId)->pluck('name', 'id');
+                            })
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $query = $data['class_id'] ? $query->where('class_id', $data['class_id']) : $query;
 
-                    return $data['section_id'] ? $query->where('section_id', $data['section_id']) : $query;
-                })
+                        return $data['section_id'] ? $query->where('section_id', $data['section_id']) : $query;
+                    }),
+                Filter::make('date-filter')
+                    ->form([
+                        DatePicker::make('created_at')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $data['created_at'] ? $query->whereDate('created_at', $data['created_at']) : $query;
+                    })
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->hidden(fn (Student $student) => auth()->id() !== $student->user_id),
-                Tables\Actions\DeleteAction::make()->hidden(fn (Student $student) => auth()->id() !== $student->user_id),
+                Tables\Actions\EditAction::make()
+                    ->hidden(fn(Student $student) => auth()->id() !== $student->user_id),
+                Tables\Actions\DeleteAction::make()
+                    ->hidden(fn(Student $student) => auth()->id() !== $student->user_id),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()->color(Color::Slate),
@@ -125,7 +136,7 @@ class StudentResource extends Resource
                         ->color(Color::Green)
                         ->action(function (Collection $records) {
                             return Excel::download(new StudentsExport($records), 'students.xlsx');
-                    }),
+                        }),
                     Tables\Actions\BulkAction::make('export-to-pdf')
                         ->label('PDF')
                         ->icon('heroicon-o-arrow-up-on-square-stack')
@@ -136,7 +147,7 @@ class StudentResource extends Resource
                                     Blade::render('pdf.students', ['students' => $records])
                                 )->stream();
                             }, 'students.pdf');
-                    }),
+                        }),
                 ])->label('Export selected')
             ])->defaultPaginationPageOption(25)
             ->description('You can only edit/delete the students you added.
