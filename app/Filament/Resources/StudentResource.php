@@ -8,6 +8,7 @@ use App\Filament\Resources\StudentResource\RelationManagers;
 use App\Models\Classes;
 use App\Models\Section;
 use App\Models\Student;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -21,6 +22,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Blade;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentResource extends Resource
@@ -112,16 +114,27 @@ class StudentResource extends Resource
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()->color(Color::Slate),
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('export-to-excel')
-                        ->label('Export to Excel')
+                        ->label('Excel')
                         ->icon('heroicon-o-arrow-up-on-square-stack')
                         ->color(Color::Green)
-                        ->action(function (Collection $rows) {
-                            return Excel::download(new StudentsExport($rows), 'students.xlsx');
+                        ->action(function (Collection $records) {
+                            return Excel::download(new StudentsExport($records), 'students.xlsx');
                     }),
-                ]),
+                    Tables\Actions\BulkAction::make('export-to-pdf')
+                        ->label('PDF')
+                        ->icon('heroicon-o-arrow-up-on-square-stack')
+                        ->color(Color::Red)
+                        ->action(function (Collection $records) {
+                            return response()->streamDownload(function () use ($records) {
+                                echo Pdf::loadHtml(
+                                    Blade::render('pdf.students', ['students' => $records])
+                                )->stream();
+                            }, 'students.pdf');
+                    }),
+                ])->label('Export selected')
             ]);
     }
 
