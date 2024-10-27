@@ -13,9 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ClassesResource extends Resource
@@ -29,6 +27,11 @@ class ClassesResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::$model::count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'The number of classes';
     }
 
     public static function form(Form $form): Form

@@ -18,11 +18,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Colors\Color;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Blade;
 use Maatwebsite\Excel\Facades\Excel;
@@ -38,6 +38,11 @@ class StudentResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::$model::count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'The number of students';
     }
 
     public static function form(Form $form): Form
@@ -86,6 +91,12 @@ class StudentResource extends Resource
                 TextColumn::make('class.name')->badge()->sortable(),
                 TextColumn::make('section.name')->badge(),
                 TextColumn::make('created_at')->label('Join Date')->date()->sortable(),
+            ])
+            ->emptyStateActions([
+                Action::make('create')
+                    ->label('Add student')
+                    ->url(route('filament.admin.resources.students.create'))
+                    ->icon('heroicon-m-plus')
             ])
             ->defaultSort('created_at')
             ->persistSortInSession()
