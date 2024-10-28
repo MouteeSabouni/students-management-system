@@ -90,7 +90,14 @@ class StudentResource extends Resource
                 TextColumn::make('email')->searchable()->sortable(),
                 TextColumn::make('class.name')->badge()->sortable(),
                 TextColumn::make('section.name')->badge(),
-                TextColumn::make('created_at')->label('Join Date')->date()->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Join Date')
+                    ->date('M d')
+                    ->formatStateUsing(fn ($state) => Carbon::parse($state)->isCurrentYear()
+                        ? Carbon::parse($state)->format('M d')
+                        : Carbon::parse($state)->format('M d, Y')
+                    )
+                    ->sortable(),
             ])
             ->emptyStateActions([
                 Action::make('create')
@@ -98,7 +105,7 @@ class StudentResource extends Resource
                     ->url(route('filament.admin.resources.students.create'))
                     ->icon('heroicon-m-plus')
             ])
-            ->defaultSort('created_at')
+            ->defaultSort('created_at', 'desc')
             ->persistSortInSession()
             ->filters([
                 Filter::make('class-section-filter')
