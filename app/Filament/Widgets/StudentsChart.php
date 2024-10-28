@@ -9,8 +9,6 @@ use Flowframe\Trend\TrendValue;
 
 class StudentsChart extends ChartWidget
 {
-    protected static ?string $heading = 'Students Chart';
-
     protected int|string|array $columnSpan = 'full';
 
     protected function getData(): array
